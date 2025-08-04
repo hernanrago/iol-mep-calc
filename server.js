@@ -80,11 +80,11 @@ app.get("/api/calculate-mep", async (req, res) => {
     const mep = al30Final / al30dFinal;
 
     res.json({
-      al30dBuyPrice: al30dBuyPrice.toFixed(2),
-      al30dCommissionFee: al30dCommissionFee.toFixed(2),
-      al30dMarketFee: al30dMarketFee.toFixed(2),
-      al30SellPrice: al30SellPrice.toFixed(2),
-      al30MarketFee: al30MarketFee.toFixed(2),
+      al30dBuyPrice: al30dBuyPrice.toFixed(4),
+      al30dCommissionFee: al30dCommissionFee.toFixed(4),
+      al30dMarketFee: al30dMarketFee.toFixed(4),
+      al30SellPrice: al30SellPrice.toFixed(4),
+      al30MarketFee: al30MarketFee.toFixed(4),
       mepRate: mep.toFixed(4)
     });
   } catch (error) {
