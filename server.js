@@ -40,15 +40,15 @@ async function getToken() {
 }
 
 async function fetchQuote(token, ticker) {
-  const url = \`https://api.invertironline.com/api/v2/bCBA/Titulos/\${ticker}/CotizacionDetalle\`;
+  const url = `https://api.invertironline.com/api/v2/bCBA/Titulos/${ticker}/CotizacionDetalle`;
   const response = await fetch(url, {
     headers: {
-      Authorization: \`Bearer \${token}\`
+      Authorization: `Bearer ${token}`
     }
   });
 
   if (!response.ok) {
-    throw new Error(\`Failed to fetch \${ticker}: \${response.statusText}\`);
+    throw new Error(`Failed to fetch ${ticker}: ${response.statusText}`);
   }
 
   return await response.json();
