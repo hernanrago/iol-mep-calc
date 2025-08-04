@@ -35,7 +35,7 @@ async function calculateMEP() {
         </tr>
         <tr>
           <td>MEP rate</td>
-          <td>${data.mepRate}</td>
+          <td>$∫${data.mepRate}</td>
         </tr>
       </table>
     `;
