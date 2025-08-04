@@ -12,10 +12,32 @@ async function calculateMEP() {
     }
 
     resultDiv.innerHTML = `
-      <strong>AL30D sell (with fees):</strong> ${data.al30dFinal}<br>
-      <strong>AL30 buy (with fee):</strong> ${data.al30Final}<br>
-      <strong>MEP rate:</strong> ${data.mep}<br>
-      <strong>MEP x 100:</strong> ${data.mepX100}
+      <table>
+        <tr>
+          <td>AL30D buy price</td>
+          <td>$${data.al30dBuyPrice}</td>
+        </tr>
+        <tr>
+          <td>AL30D commission fee</td>
+          <td>$${data.al30dCommissionFee}</td>
+        </tr>
+        <tr>
+          <td>AL30D market fee</td>
+          <td>$${data.al30dMarketFee}</td>
+        </tr>
+        <tr>
+          <td>AL30 sell price</td>
+          <td>$${data.al30SellPrice}</td>
+        </tr>
+        <tr>
+          <td>AL30 market fee</td>
+          <td>$${data.al30MarketFee}</td>
+        </tr>
+        <tr>
+          <td>MEP rate</td>
+          <td>${data.mepRate}</td>
+        </tr>
+      </table>
     `;
   } catch (err) {
     resultDiv.textContent = `Unexpected error: ${err.message}`;

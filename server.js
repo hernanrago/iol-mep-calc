@@ -67,19 +67,25 @@ app.get("/api/calculate-mep", async (req, res) => {
       fetchQuote(token, "al30")
     ]);
 
-    const al30dSell = al30d.puntas[0].precioVenta;
-    const al30Buy = al30.puntas[0].precioCompra;
+    const al30dBuyPrice = al30d.puntas[0].precioCompra;
+    const al30dCommissionFee = al30dBuyPrice * 0.49 / 100;
+    const al30dMarketFee = al30dBuyPrice * 0.01 / 100;
+    
+    const al30SellPrice = al30.puntas[0].precioVenta;
+    const al30MarketFee = al30SellPrice * 0.01 / 100;
 
-    const al30dFinal = applyFees(al30dSell, 0.49, 0.01, "add");
-    const al30Final = applyFees(al30Buy, 0, 0.01, "subtract");
+    const al30dFinal = al30dBuyPrice + al30dCommissionFee + al30dMarketFee;
+    const al30Final = al30SellPrice - al30MarketFee;
 
     const mep = al30Final / al30dFinal;
 
     res.json({
-      al30dFinal: al30dFinal.toFixed(2),
-      al30Final: al30Final.toFixed(2),
-      mep: mep.toFixed(4),
-      mepX100: (mep * 100).toFixed(2)
+      al30dBuyPrice: al30dBuyPrice.toFixed(2),
+      al30dCommissionFee: al30dCommissionFee.toFixed(2),
+      al30dMarketFee: al30dMarketFee.toFixed(2),
+      al30SellPrice: al30SellPrice.toFixed(2),
+      al30MarketFee: al30MarketFee.toFixed(2),
+      mepRate: mep.toFixed(4)
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
