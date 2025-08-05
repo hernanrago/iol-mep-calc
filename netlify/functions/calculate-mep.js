@@ -1,32 +1,5 @@
 import fetch from "node-fetch";
-
-const username = process.env.IOL_USERNAME;
-const password = process.env.IOL_PASSWORD;
-
-async function getToken() {
-  console.log('Requesting authentication token...');
-  const formData = new URLSearchParams();
-  formData.append("username", username);
-  formData.append("password", password);
-  formData.append("grant_type", "password");
-
-  const response = await fetch("https://api.invertironline.com/token", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded"
-    },
-    body: formData
-  });
-
-  if (!response.ok) {
-    console.error('Authentication failed:', response.status, response.statusText);
-    throw new Error("Failed to authenticate: " + response.statusText);
-  }
-
-  const data = await response.json();
-  console.log('Authentication successful');
-  return data.access_token;
-}
+import { getToken } from "./lib/auth.js";
 
 async function fetchQuote(token, ticker) {
   console.log(`Fetching quote for ${ticker}...`);
