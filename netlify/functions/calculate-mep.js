@@ -18,8 +18,11 @@ async function fetchQuote(token, ticker) {
   const data = await response.json();
   
   if (!data.puntas || !Array.isArray(data.puntas) || data.puntas.length === 0) {
-    console.error(`Invalid puntas data for ${ticker}:`, data.puntas);
-    throw new Error(`Invalid or missing puntas data for ${ticker}`);
+    if (!data.ultimoPrecio) {
+      console.error(`No puntas or ultimoPrecio data for ${ticker}:`, { puntas: data.puntas, ultimoPrecio: data.ultimoPrecio });
+      throw new Error(`No price data available for ${ticker}`);
+    }
+    console.log(`Using ultimoPrecio for ${ticker} (puntas not available)`);
   }
 
   console.log(`Quote for ${ticker} fetched successfully`);
@@ -40,24 +43,33 @@ const bondPairs = [
   { dollar: "GD41D", peso: "GD41" }
 ];
 
+function getPriceFromQuote(quote, priceType, bondName) {
+  if (quote.puntas && Array.isArray(quote.puntas) && quote.puntas.length > 0) {
+    const price = priceType === 'buy' ? quote.puntas[0].precioCompra : quote.puntas[0].precioVenta;
+    if (price) {
+      return price;
+    }
+  }
+  
+  if (quote.ultimoPrecio) {
+    console.log(`Using ultimoPrecio for ${bondName} ${priceType} price`);
+    return quote.ultimoPrecio;
+  }
+  
+  throw new Error(`No ${priceType} price available for ${bondName}`);
+}
+
 async function calculateMEPForPair(token, dollarBond, pesoBond) {
   const [dollarQuote, pesoQuote] = await Promise.all([
     fetchQuote(token, dollarBond.toLowerCase()),
     fetchQuote(token, pesoBond.toLowerCase())
   ]);
 
-  if (!dollarQuote.puntas[0].precioCompra) {
-    throw new Error(`Missing precioCompra for ${dollarBond}`);
-  }
-  if (!pesoQuote.puntas[0].precioVenta) {
-    throw new Error(`Missing precioVenta for ${pesoBond}`);
-  }
-
-  const dollarBuyPrice = dollarQuote.puntas[0].precioCompra;
+  const dollarBuyPrice = getPriceFromQuote(dollarQuote, 'buy', dollarBond);
   const dollarCommissionFee = dollarBuyPrice * 0.49 / 100;
   const dollarMarketFee = dollarBuyPrice * 0.01 / 100;
   
-  const pesoSellPrice = pesoQuote.puntas[0].precioVenta;
+  const pesoSellPrice = getPriceFromQuote(pesoQuote, 'sell', pesoBond);
   const pesoMarketFee = pesoSellPrice * 0.01 / 100;
 
   const dollarFinal = dollarBuyPrice + dollarCommissionFee + dollarMarketFee;
