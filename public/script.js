@@ -3,7 +3,7 @@ async function calculateMEP() {
   resultDiv.textContent = "Calculating...";
 
   try {
-    const response = await fetch("/api/calculate-mep");
+    const response = await fetch("/.netlify/functions/calculate-mep");
     const data = await response.json();
 
     if (data.error) {
