@@ -4,6 +4,7 @@ const username = process.env.IOL_USERNAME;
 const password = process.env.IOL_PASSWORD;
 
 async function getToken() {
+  console.log('Requesting authentication token...');
   const formData = new URLSearchParams();
   formData.append("username", username);
   formData.append("password", password);
@@ -18,14 +19,17 @@ async function getToken() {
   });
 
   if (!response.ok) {
+    console.error('Authentication failed:', response.status, response.statusText);
     throw new Error("Failed to authenticate: " + response.statusText);
   }
 
   const data = await response.json();
+  console.log('Authentication successful');
   return data.access_token;
 }
 
 async function fetchQuote(token, ticker) {
+  console.log(`Fetching quote for ${ticker}...`);
   const url = `https://api.invertironline.com/api/v2/bCBA/Titulos/${ticker}/CotizacionDetalle`;
   const response = await fetch(url, {
     headers: {
@@ -34,13 +38,17 @@ async function fetchQuote(token, ticker) {
   });
 
   if (!response.ok) {
+    console.error(`Failed to fetch ${ticker}:`, response.status, response.statusText);
     throw new Error(`Failed to fetch ${ticker}: ${response.statusText}`);
   }
 
+  console.log(`Quote for ${ticker} fetched successfully`);
   return await response.json();
 }
 
 export const handler = async (event, context) => {
+  console.log('MEP calculation request received');
+  
   const headers = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Headers": "Content-Type",
@@ -48,6 +56,7 @@ export const handler = async (event, context) => {
   };
 
   if (event.httpMethod === "OPTIONS") {
+    console.log('OPTIONS request handled');
     return {
       statusCode: 200,
       headers,
@@ -56,6 +65,7 @@ export const handler = async (event, context) => {
   }
 
   try {
+    console.log('Starting authentication...');
     const token = await getToken();
     const [al30d, al30] = await Promise.all([
       fetchQuote(token, "al30d"),
@@ -74,6 +84,12 @@ export const handler = async (event, context) => {
 
     const mep = al30Final / al30dFinal;
 
+    console.log('MEP calculation completed:', {
+      mepRate: mep.toFixed(4),
+      al30dBuyPrice: al30dBuyPrice.toFixed(4),
+      al30SellPrice: al30SellPrice.toFixed(4)
+    });
+
     return {
       statusCode: 200,
       headers,
@@ -87,6 +103,7 @@ export const handler = async (event, context) => {
       })
     };
   } catch (error) {
+    console.error('MEP calculation error:', error.message);
     return {
       statusCode: 500,
       headers,
