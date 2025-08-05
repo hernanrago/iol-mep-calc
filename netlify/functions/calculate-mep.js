@@ -42,8 +42,15 @@ async function fetchQuote(token, ticker) {
     throw new Error(`Failed to fetch ${ticker}: ${response.statusText}`);
   }
 
+  const data = await response.json();
+  
+  if (!data.puntas || !Array.isArray(data.puntas) || data.puntas.length === 0) {
+    console.error(`Invalid puntas data for ${ticker}:`, data.puntas);
+    throw new Error(`Invalid or missing puntas data for ${ticker}`);
+  }
+
   console.log(`Quote for ${ticker} fetched successfully`);
-  return await response.json();
+  return data;
 }
 
 export const handler = async (event, context) => {
@@ -71,6 +78,13 @@ export const handler = async (event, context) => {
       fetchQuote(token, "al30d"),
       fetchQuote(token, "al30")
     ]);
+
+    if (!al30d.puntas[0].precioCompra) {
+      throw new Error('Missing precioCompra for AL30D');
+    }
+    if (!al30.puntas[0].precioVenta) {
+      throw new Error('Missing precioVenta for AL30');
+    }
 
     const al30dBuyPrice = al30d.puntas[0].precioCompra;
     const al30dCommissionFee = al30dBuyPrice * 0.49 / 100;
