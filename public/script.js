@@ -1,45 +1,58 @@
 async function calculateMEP() {
   const resultDiv = document.getElementById("result");
-  resultDiv.textContent = "Calculating...";
+  resultDiv.innerHTML = '<div class="loading">Calculating MEP for all bonds...</div>';
 
   try {
     const response = await fetch("/.netlify/functions/calculate-mep");
     const data = await response.json();
 
     if (data.error) {
-      resultDiv.textContent = `Error: ${data.error}`;
+      resultDiv.innerHTML = `<div class="error">Error: ${data.error}</div>`;
       return;
     }
 
-    resultDiv.innerHTML = `
-      <table>
-        <tr>
-          <td>AL30D buy price</td>
-          <td>$${data.al30dBuyPrice}</td>
-        </tr>
-        <tr>
-          <td>AL30D commission fee</td>
-          <td>$${data.al30dCommissionFee}</td>
-        </tr>
-        <tr>
-          <td>AL30D market fee</td>
-          <td>$${data.al30dMarketFee}</td>
-        </tr>
-        <tr>
-          <td>AL30 sell price</td>
-          <td>$${data.al30SellPrice}</td>
-        </tr>
-        <tr>
-          <td>AL30 market fee</td>
-          <td>$${data.al30MarketFee}</td>
-        </tr>
-        <tr>
-          <td>MEP rate</td>
-          <td>$${data.mepRate}</td>
-        </tr>
-      </table>
-    `;
+    if (!data.bonds || data.bonds.length === 0) {
+      resultDiv.innerHTML = '<div class="error">No bond data received</div>';
+      return;
+    }
+
+    // Sort bonds by MEP rate (highest first)
+    const sortedBonds = data.bonds.sort((a, b) => parseFloat(b.mepRate) - parseFloat(a.mepRate));
+
+    let html = '';
+    sortedBonds.forEach(bond => {
+      html += `
+        <div class="bond-card">
+          <div class="bond-title">${bond.pair}</div>
+          <div class="mep-rate">MEP Rate: $${bond.mepRate}</div>
+          <table>
+            <tr>
+              <td>${bond.dollarBond} buy price</td>
+              <td>$${bond.dollarBuyPrice}</td>
+            </tr>
+            <tr>
+              <td>${bond.dollarBond} commission fee</td>
+              <td>$${bond.dollarCommissionFee}</td>
+            </tr>
+            <tr>
+              <td>${bond.dollarBond} market fee</td>
+              <td>$${bond.dollarMarketFee}</td>
+            </tr>
+            <tr>
+              <td>${bond.pesoBond} sell price</td>
+              <td>$${bond.pesoSellPrice}</td>
+            </tr>
+            <tr>
+              <td>${bond.pesoBond} market fee</td>
+              <td>$${bond.pesoMarketFee}</td>
+            </tr>
+          </table>
+        </div>
+      `;
+    });
+
+    resultDiv.innerHTML = html;
   } catch (err) {
-    resultDiv.textContent = `Unexpected error: ${err.message}`;
+    resultDiv.innerHTML = `<div class="error">Unexpected error: ${err.message}</div>`;
   }
 }

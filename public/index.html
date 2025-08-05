@@ -2,22 +2,86 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>AL30 MEP Calculator</title>
+  <title>MEP Calculator</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: auto; }
-    .result { font-size: 1.2em; margin-top: 20px; }
-    button { padding: 10px; font-size: 1em; width: 100%; margin-bottom: 10px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    td { padding: 8px 12px; border: 1px solid #ddd; }
-    tr:nth-child(even) { background-color: #f9f9f9; }
-    td:first-child { font-weight: bold; background-color: #f5f5f5; }
-    td:last-child { text-align: right; }
+    body { 
+      font-family: Arial, sans-serif; 
+      padding: 20px; 
+      max-width: 1200px; 
+      margin: auto; 
+    }
+    .result { 
+      font-size: 1em; 
+      margin-top: 20px; 
+    }
+    button { 
+      padding: 10px; 
+      font-size: 1em; 
+      width: 100%; 
+      margin-bottom: 10px; 
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    .bond-card {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      margin: 10px 0;
+      padding: 15px;
+      background-color: #f9f9f9;
+    }
+    .bond-title {
+      font-size: 1.2em;
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #333;
+    }
+    .mep-rate {
+      font-size: 1.4em;
+      font-weight: bold;
+      color: #007bff;
+      margin-bottom: 10px;
+    }
+    table { 
+      width: 100%; 
+      border-collapse: collapse; 
+      font-size: 0.9em;
+    }
+    td { 
+      padding: 6px 10px; 
+      border: 1px solid #ddd; 
+    }
+    tr:nth-child(even) { 
+      background-color: #fff; 
+    }
+    td:first-child { 
+      font-weight: bold; 
+      background-color: #f5f5f5; 
+      width: 60%;
+    }
+    td:last-child { 
+      text-align: right; 
+    }
+    .loading {
+      text-align: center;
+      font-style: italic;
+      color: #666;
+    }
+    .error {
+      color: #dc3545;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
-  <h1>AL30 MEP Calculator</h1>
+  <h1>MEP Calculator - All Bonds</h1>
 
-  <button onclick="calculateMEP()">Calculate MEP</button>
+  <button onclick="calculateMEP()">Calculate MEP for All Bonds</button>
   <div id="result" class="result"></div>
 
   <script src="script.js"></script>

@@ -26,6 +26,58 @@ async function fetchQuote(token, ticker) {
   return data;
 }
 
+const bondPairs = [
+  { dollar: "AL29D", peso: "AL29" },
+  { dollar: "AL30D", peso: "AL30" },
+  { dollar: "AE38D", peso: "AE38" },
+  { dollar: "AL35D", peso: "AL35" },
+  { dollar: "AL41D", peso: "AL41" },
+  { dollar: "GD29D", peso: "GD29" },
+  { dollar: "GD30D", peso: "GD30" },
+  { dollar: "GD38D", peso: "GD38" },
+  { dollar: "GD35D", peso: "GD35" },
+  { dollar: "GD46D", peso: "GD46" },
+  { dollar: "GD41D", peso: "GD41" }
+];
+
+async function calculateMEPForPair(token, dollarBond, pesoBond) {
+  const [dollarQuote, pesoQuote] = await Promise.all([
+    fetchQuote(token, dollarBond.toLowerCase()),
+    fetchQuote(token, pesoBond.toLowerCase())
+  ]);
+
+  if (!dollarQuote.puntas[0].precioCompra) {
+    throw new Error(`Missing precioCompra for ${dollarBond}`);
+  }
+  if (!pesoQuote.puntas[0].precioVenta) {
+    throw new Error(`Missing precioVenta for ${pesoBond}`);
+  }
+
+  const dollarBuyPrice = dollarQuote.puntas[0].precioCompra;
+  const dollarCommissionFee = dollarBuyPrice * 0.49 / 100;
+  const dollarMarketFee = dollarBuyPrice * 0.01 / 100;
+  
+  const pesoSellPrice = pesoQuote.puntas[0].precioVenta;
+  const pesoMarketFee = pesoSellPrice * 0.01 / 100;
+
+  const dollarFinal = dollarBuyPrice + dollarCommissionFee + dollarMarketFee;
+  const pesoFinal = pesoSellPrice - pesoMarketFee;
+
+  const mep = pesoFinal / dollarFinal;
+
+  return {
+    pair: `${dollarBond}/${pesoBond}`,
+    dollarBond,
+    pesoBond,
+    dollarBuyPrice: dollarBuyPrice.toFixed(4),
+    dollarCommissionFee: dollarCommissionFee.toFixed(4),
+    dollarMarketFee: dollarMarketFee.toFixed(4),
+    pesoSellPrice: pesoSellPrice.toFixed(4),
+    pesoMarketFee: pesoMarketFee.toFixed(4),
+    mepRate: mep.toFixed(4)
+  };
+}
+
 export const handler = async (event, context) => {
   console.log('MEP calculation request received');
   
@@ -47,47 +99,18 @@ export const handler = async (event, context) => {
   try {
     console.log('Starting authentication...');
     const token = await getToken();
-    const [al30d, al30] = await Promise.all([
-      fetchQuote(token, "al30d"),
-      fetchQuote(token, "al30")
-    ]);
-
-    if (!al30d.puntas[0].precioCompra) {
-      throw new Error('Missing precioCompra for AL30D');
-    }
-    if (!al30.puntas[0].precioVenta) {
-      throw new Error('Missing precioVenta for AL30');
-    }
-
-    const al30dBuyPrice = al30d.puntas[0].precioCompra;
-    const al30dCommissionFee = al30dBuyPrice * 0.49 / 100;
-    const al30dMarketFee = al30dBuyPrice * 0.01 / 100;
     
-    const al30SellPrice = al30.puntas[0].precioVenta;
-    const al30MarketFee = al30SellPrice * 0.01 / 100;
+    console.log('Calculating MEP for all bond pairs...');
+    const results = await Promise.all(
+      bondPairs.map(pair => calculateMEPForPair(token, pair.dollar, pair.peso))
+    );
 
-    const al30dFinal = al30dBuyPrice + al30dCommissionFee + al30dMarketFee;
-    const al30Final = al30SellPrice - al30MarketFee;
-
-    const mep = al30Final / al30dFinal;
-
-    console.log('MEP calculation completed:', {
-      mepRate: mep.toFixed(4),
-      al30dBuyPrice: al30dBuyPrice.toFixed(4),
-      al30SellPrice: al30SellPrice.toFixed(4)
-    });
+    console.log('MEP calculations completed for all pairs');
 
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify({
-        al30dBuyPrice: al30dBuyPrice.toFixed(4),
-        al30dCommissionFee: al30dCommissionFee.toFixed(4),
-        al30dMarketFee: al30dMarketFee.toFixed(4),
-        al30SellPrice: al30SellPrice.toFixed(4),
-        al30MarketFee: al30MarketFee.toFixed(4),
-        mepRate: mep.toFixed(4)
-      })
+      body: JSON.stringify({ bonds: results })
     };
   } catch (error) {
     console.error('MEP calculation error:', error.message);
