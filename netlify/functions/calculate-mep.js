@@ -1,47 +1,6 @@
-import fetch from "node-fetch";
 import { getToken } from "js-utils/invertironline/auth.js";
-
-async function fetchQuote(token, ticker) {
-  console.log(`Fetching quote for ${ticker}...`);
-  const url = `https://api.invertironline.com/api/v2/bCBA/Titulos/${ticker}/CotizacionDetalle`;
-  const response = await fetch(url, {
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
-  });
-
-  if (!response.ok) {
-    console.error(`Failed to fetch ${ticker}:`, response.status, response.statusText);
-    throw new Error(`Failed to fetch ${ticker}: ${response.statusText}`);
-  }
-
-  const data = await response.json();
-  
-  if (!data.puntas || !Array.isArray(data.puntas) || data.puntas.length === 0) {
-    if (!data.ultimoPrecio) {
-      console.error(`No puntas or ultimoPrecio data for ${ticker}:`, { puntas: data.puntas, ultimoPrecio: data.ultimoPrecio });
-      throw new Error(`No price data available for ${ticker}`);
-    }
-    console.log(`Using ultimoPrecio for ${ticker} (puntas not available)`);
-  }
-
-  console.log(`Quote for ${ticker} fetched successfully`);
-  return data;
-}
-
-const bondPairs = [
-  { dollar: "AL29D", peso: "AL29" },
-  { dollar: "AL30D", peso: "AL30" },
-  { dollar: "AE38D", peso: "AE38" },
-  { dollar: "AL35D", peso: "AL35" },
-  { dollar: "AL41D", peso: "AL41" },
-  { dollar: "GD29D", peso: "GD29" },
-  { dollar: "GD30D", peso: "GD30" },
-  { dollar: "GD38D", peso: "GD38" },
-  { dollar: "GD35D", peso: "GD35" },
-  { dollar: "GD46D", peso: "GD46" },
-  { dollar: "GD41D", peso: "GD41" }
-];
+import { fetchQuote } from "js-utils/invertironline/fetch-quote.js";
+import bondPairs from "../../data/bond-pairs.json" assert { type: "json" };
 
 function getPriceFromQuote(quote, priceType, bondName) {
   if (quote.puntas && Array.isArray(quote.puntas) && quote.puntas.length > 0) {

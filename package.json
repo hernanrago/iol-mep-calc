@@ -7,7 +7,7 @@
     "dev": "netlify dev"
   },
   "dependencies": {
-    "node-fetch": "^3.3.2",
-    "js-utils": "https://github.com/hernanrago/js-utils.git"
+    "js-utils": "https://github.com/hernanrago/js-utils.git",
+    "node-fetch": "^3.3.2"
   }
 }
