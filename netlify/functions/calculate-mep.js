@@ -1,5 +1,5 @@
 import fetch from "node-fetch";
-import { getToken } from "./lib/auth.js";
+import { getToken } from "js-utils/invertironline/auth.js";
 
 async function fetchQuote(token, ticker) {
   console.log(`Fetching quote for ${ticker}...`);
